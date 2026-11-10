@@ -1,6 +1,28 @@
 import tilelang
 import tilelang.language as T
 
+# 我们从阶段 0 的 **GPU 执行模型** 开始，结合仓库里的 [quickstart.py](/Users/ylzzz/code/personal/ai/tilelang/examples/quickstart.py:19) 理解：
+
+# ```python
+# with T.Kernel(
+#     T.ceildiv(N, block_N),
+#     T.ceildiv(M, block_M),
+#     threads=128,
+# ) as (bx, by):
+# ```
+
+# 这里把输出矩阵 `C[M, N]` 划分成多个小块：
+
+# - **Grid**：所有 Block 的集合，这里有 `ceil(N/block_N) × ceil(M/block_M)` 个 Block。
+# - **Block**：负责计算一个 `block_M × block_N` 的输出块，`bx、by` 是块坐标。
+# - **Thread**：每个 Block 有 128 个线程，协作搬数据和计算。
+# - **Warp**：在 NVIDIA GPU 上，32 个线程组成一个 Warp，因此这里每个 Block 有 4 个 Warp。
+
+# 例子中，`M=N=1024`，`block_M=block_N=128`，所以共有 **8 × 8 = 64 个 Block**。每个 Block 负责输出矩阵中的一块 `128 × 128` 区域。
+
+# 先抓住这个核心：**TileLang 中描述的 tile，是一组线程共同处理的数据块；一个线程通常要处理多个元素。**
+
+# 下一步就沿着这个例子看：为什么需要 `A_shared`、`B_shared` 和 `C_local`，它们分别存在哪里。
 
 # @tilelang.jit(target="cuda")
 # target currently can be "cuda" or "hip" or "cpu".
@@ -69,10 +91,19 @@ c = matmul_relu_kernel(a, b)
 
 print(c)
 # Reference multiplication using PyTorch
+# ref_c = torch.relu(a @ b)
+
+# # Validate correctness
+# torch.testing.assert_close(c, ref_c, rtol=1e-2, atol=1e-2)
+
+# 禁止 PyTorch 在 FP16 GEMM 中使用低精度中间归约
+torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
+
 ref_c = torch.relu(a @ b)
 
-# Validate correctness
 torch.testing.assert_close(c, ref_c, rtol=1e-2, atol=1e-2)
+
+
 print("Kernel output matches PyTorch reference.")
 
 # Retrieve and inspect the generated CUDA source (optional)
