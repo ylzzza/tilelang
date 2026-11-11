@@ -26,9 +26,9 @@ repo: ~/code/personal/ai/tilelang
 
 ## 阶段 0：前置知识
 
-- [ ] GPU 执行模型：Grid / Block / Warp / Thread，SM、Shared Memory、寄存器
-- [ ] 内存层级与访存优化：coalescing、bank conflict、L2
-- [ ] Tensor Core / MMA 基本概念（`mma.sync`、`wgmma`、TMA 了解即可）
+- [ ] GPU 执行模型：Grid / Block / Warp / Thread，SM、Shared Memory、寄存器 → [学习笔记：GPU 执行模型入门](<GPU 执行模型入门.md>)
+- [ ] 内存层级与访存优化：coalescing、bank conflict、L2 → [学习笔记：GPU 内存层级与访存优化](<GPU 内存层级与访存优化.md>)
+- [ ] Tensor Core / MMA 基本概念（`mma.sync`、`wgmma`、TMA 了解即可） → [学习笔记：Tensor Core 与 MMA 入门](<Tensor Core 与 MMA 入门.md>)
 - [ ] TVM 基础：`PrimFunc`、`IRModule`、`Buffer`、TIR Stmt/Expr、Pass 机制
 - [ ] 对比阅读：Triton 的编程模型（tile 级别抽象），理解 TileLang 定位
 
